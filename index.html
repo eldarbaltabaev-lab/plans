@@ -63,7 +63,7 @@ h1{margin:0;font:800 17px/1.15 'Shippori Mincho','Noto Serif',serif;max-width:40
 .day b{font:800 13px 'Shippori Mincho',serif;color:var(--soft)}.day span{font:800 16px 'Shippori Mincho','Noto Serif',serif}.day i{font-style:normal;font-size:7px;height:9px;color:var(--a1)}
 .day.today{border-color:var(--a1);box-shadow:0 3px 0 var(--a1)}
 .day.on{background:var(--a1);color:#fff}.day.on b,.day.on i{color:#fff}
-.side{position:absolute;right:12px;top:calc(var(--st) + 196px);display:grid;grid-template-columns:repeat(2,44px);gap:8px}
+.side{position:absolute;right:12px;top:calc(var(--st) + 196px);display:grid;grid-template-columns:repeat(3,44px);gap:8px}
 button{font:inherit;font-weight:700;font-size:14px;padding:9px 12px;color:var(--ink);background:var(--card);border:1.5px solid var(--ink);border-radius:8px;cursor:pointer;box-shadow:0 3px 0 var(--ink);touch-action:manipulation;transition:transform .12s,box-shadow .12s}
 button:active{transform:translateY(3px);box-shadow:0 0 0 var(--ink)}
 .side button{width:44px;height:44px;padding:0;font-size:19px}
@@ -97,6 +97,16 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .ai span{flex:1;font-weight:700}.ai small{color:var(--soft);font-weight:700}
 .ai.late span{color:var(--a1)}.ai.done span{text-decoration:line-through;opacity:.5}
 .ag{font:800 14px 'Shippori Mincho','Noto Serif',serif;color:var(--a1);margin:10px 0 0}
+.stg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stc{border:1.5px solid var(--ink);border-radius:8px;padding:10px 4px;text-align:center;box-shadow:3px 3px 0 var(--ink);background:var(--card)}
+.stc b{display:block;font:800 26px 'Shippori Mincho','Noto Serif',serif;color:var(--a1)}.stc small{font-size:11px;font-weight:700;color:var(--soft)}
+.bars{display:flex;gap:8px;align-items:flex-end;height:110px;margin-top:6px}
+.bc{flex:1;display:grid;justify-items:center;gap:3px;align-content:end;height:100%}
+.bc i{display:block;width:100%;background:var(--a1);border-radius:4px 4px 0 0;box-shadow:2px 2px 0 var(--ink)}
+.bc b{font:800 13px 'Shippori Mincho',serif;color:var(--soft)}.bc small{font-size:11px;font-weight:700}
+.ftd{font:800 64px 'Shippori Mincho','Noto Serif',serif;text-align:center;color:var(--a1);margin:6px 0}
+.pi span{font:800 16px 'Shippori Mincho','Noto Serif',serif}
+#fp{position:absolute;left:12px;top:calc(var(--st) + 178px);background:var(--a1);color:#fff;font-weight:800;padding:6px 12px}
 #toast{position:fixed;left:50%;bottom:calc(var(--sb) + 90px);transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;font-weight:700;opacity:0;pointer-events:none;transition:.3s;z-index:30;max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
@@ -108,7 +118,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <div class="tools"><button class="main" id="share">送 Обмен</button><button id="theme" aria-label="Сменить тему">月</button></div>
 <div id="bar2"><input type="search" id="q" placeholder="Поиск событий…" aria-label="Поиск"><button class="f" id="c1" data-f="today">Сегодня</button><button class="f" id="c2" data-f="late">Просрочено</button></div>
 <div id="car"><button class="ar" id="pv" aria-label="Назад">‹</button><div id="days"></div><button class="ar" id="nx" aria-label="Вперёд">›</button></div>
-<div class="side"><button id="fit" title="Показать весь план" aria-label="Показать весь план">全</button><button id="tidy" title="Разложить" aria-label="Разложить аккуратно">整</button><button id="un" title="Отменить" aria-label="Отменить">↶</button><button id="re" title="Вернуть" aria-label="Вернуть">↷</button><button id="nxt" title="Самое срочное" aria-label="Самое срочное">◎</button><button id="ag" title="Список по датам" aria-label="Список по датам">☰</button></div>
+<div class="side"><button id="fit" title="Показать весь план" aria-label="Показать весь план">全</button><button id="tidy" title="Разложить" aria-label="Разложить аккуратно">整</button><button id="un" title="Отменить" aria-label="Отменить">↶</button><button id="re" title="Вернуть" aria-label="Вернуть">↷</button><button id="nxt" title="Самое срочное" aria-label="Самое срочное">◎</button><button id="ag" title="Список по датам" aria-label="Список по датам">☰</button><button id="pl" title="Планы" aria-label="Мои планы">冊</button><button id="stt" title="Статистика" aria-label="Статистика">計</button><button id="fc" title="Фокус-таймер" aria-label="Фокус-таймер">⏱</button></div>
 <div id="panel"></div>
 <div id="sheet" hidden>
   <div class="box" role="dialog" aria-label="Обмен планами">
@@ -125,7 +135,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
     <div class="row"><button class="main" id="rep" style="flex:1">Заменить мой план</button><button id="add" style="flex:1">Добавить рядом</button></div>
   </div>
 </div>
-<div id="agenda" hidden><div class="box" role="dialog" aria-label="Список по датам"><h2>Список по датам <button id="ax" aria-label="Закрыть">✕</button></h2><div id="al"></div></div></div>
+<button id="fp" hidden aria-label="Таймер фокуса">⏱ 25:00</button>
+<div id="agenda" hidden><div class="box" role="dialog" aria-label="Список по датам"><h2><span id="agt">Список по датам</span> <button id="ax" aria-label="Закрыть">✕</button></h2><div id="al"></div></div></div>
 <div id="toast" role="status"></div>
 <script>
 (function(){
@@ -133,6 +144,9 @@ var W=164,H=58,KEY='ne-planner-v1',TH='ne-theme',wd=['日','月','火','水','�
 var COL=['#d7132a','#2f4fb5','#4f9d5b','#e0a21a','#ef7fa8'];
 var S={nodes:[],edges:[],sel:null,link:false,tx:0,ty:0,k:1,title:'',author:'',day:null,f:null,q:'',anim:false};
 var Hs=[],Rs=[];
+var PL=[{id:'main',n:'Мой план'}],CUR='main';
+try{var pj=JSON.parse(localStorage.getItem('ne-plans'));if(pj&&pj.length)PL=pj;var cc=localStorage.getItem('ne-cur');if(cc&&PL.some(function(x){return x.id===cc}))CUR=cc}catch(x){}
+function keyFor(id){return id==='main'?KEY:'ne-plan-'+id}
 var $=function(i){return document.getElementById(i)};
 var svg=$('stage'),cam=$('cam'),world=$('world'),panel=$('panel'),sheet=$('sheet'),codeEl=$('code');
 var uid=function(){return 'n'+Math.random().toString(36).slice(2,8)};
@@ -145,10 +159,11 @@ function seed(){
   S.nodes=[a,b,c,e,f];S.edges=[[a.id,b.id],[a.id,c.id],[a.id,e.id],[b.id,f.id],[c.id,f.id],[e.id,f.id]];
 }
 function load(){
-  try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);if(o&&o.nodes&&o.nodes.length){S.nodes=o.nodes;S.edges=o.edges||[];S.title=o.title||'';S.author=o.author||'';return}}}catch(x){}
-  seed();
+  S.title='';S.author='';
+  try{var r=localStorage.getItem(keyFor(CUR));if(r){var o=JSON.parse(r);if(o&&Array.isArray(o.nodes)&&(o.nodes.length||CUR!=='main')){S.nodes=o.nodes;S.edges=o.edges||[];S.title=o.title||'';S.author=o.author||'';return}}}catch(x){}
+  if(CUR==='main')seed();else{S.nodes=[];S.edges=[]}
 }
-function save(){try{localStorage.setItem(KEY,JSON.stringify({nodes:S.nodes,edges:S.edges,title:S.title,author:S.author}))}catch(x){}}
+function save(){try{localStorage.setItem(keyFor(CUR),JSON.stringify({nodes:S.nodes,edges:S.edges,title:S.title,author:S.author}))}catch(x){}}
 var get=function(id){return S.nodes.find(function(n){return n.id===id})};
 function fmt(d){if(!d)return 'без даты';var p=d.split('-'),dt=new Date(+p[0],+p[1]-1,+p[2]);return dt.toLocaleDateString('ru',{day:'numeric',month:'short'})+' · '+wd[dt.getDay()]}
 var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
@@ -255,7 +270,7 @@ function qparse(s){
   return{t:o.replace(/\s+/g,' ').trim()||'Новое событие',d:d};
 }
 function setDone(n,v){
-  n.done=v;save();if(!v)return;
+  n.done=v;save();if(!v)return;bump('d',1);
   burst(n);buzz();toast('Отлично! Ещё один шаг сделан');
   if(n.r&&n.d){var c=JSON.parse(JSON.stringify(n));c.id=uid();c.d=shift(n.d,n.r);c.done=false;c.y=n.y+150;c.s=(c.s||[]).map(function(i){return{t:i.t,x:0}});n.r=0;S.nodes.push(c);S.edges.push([n.id,c.id]);toast('Создан следующий повтор: '+fmt(c.d))}
   else if(S.nodes.every(function(x){return x.done})){party();toast('Весь план выполнен! 🎉')}
@@ -342,6 +357,58 @@ function tidy(){
   Object.keys(rows).forEach(function(r){var a=rows[r].sort(function(p,q){return p.x-q.x});a.forEach(function(n,i){n.x=(i-(a.length-1)/2)*(W+36);n.y=r*150})});
   save();fit();toast('План разложен · ↶ вернёт');
 }
+function ov(t,h){$('agt').textContent=t;$('al').innerHTML=h;$('agenda').hidden=false}
+function getLog(){try{return JSON.parse(localStorage.getItem('ne-log'))||{}}catch(x){return{}}}
+function bump(k,v){var L=getLog(),t=iso(0);L[t]=L[t]||{d:0,f:0};L[t][k]+=v;try{localStorage.setItem('ne-log',JSON.stringify(L))}catch(x){}}
+function dow(k){var p=k.split('-');return wd[new Date(+p[0],+p[1]-1,+p[2]).getDay()]}
+function statsView(){
+  var L=getLog(),mx=1,tot=0,fm=0,st=0,A=[],t=iso(0);
+  for(var i=6;i>=0;i--){var k=iso(-i),e=L[k]||{d:0,f:0};A.push([k,e]);mx=Math.max(mx,e.d);tot+=e.d;fm+=e.f}
+  var bars=A.map(function(x){return '<div class="bc"><small>'+(x[1].d||'')+'</small><i style="height:'+(4+x[1].d/mx*64)+'px"></i><b>'+dow(x[0])+'</b></div>'}).join('');
+  for(var j=0;j<400;j++){var e2=L[iso(-j)];if(e2&&(e2.d||e2.f))st++;else if(j>0)break}
+  var dn=S.nodes.filter(function(n){return n.done}).length,late=S.nodes.filter(function(n){return !n.done&&n.d&&n.d<t}).length;
+  ov('Статистика','<div class="stg"><div class="stc"><b>'+st+'</b><small>дней подряд</small></div><div class="stc"><b>'+tot+'</b><small>сделано за 7 дн</small></div><div class="stc"><b>'+fm+'</b><small>мин фокуса</small></div></div><div class="bars">'+bars+'</div><p class="hint">Текущий план: готово '+dn+' из '+S.nodes.length+(late?', просрочено '+late:'')+'.</p>');
+}
+var FT={end:0,t:null,mins:25,id:null};
+function ftick(){
+  var left=Math.max(0,Math.round((FT.end-Date.now())/1000)),txt=pad(Math.floor(left/60))+':'+pad(left%60);
+  $('fp').hidden=!FT.end;$('fp').textContent='⏱ '+txt;if($('ftd'))$('ftd').textContent=txt;
+  if(FT.end&&left<=0)fdone();
+}
+function fstop(){FT.end=0;clearInterval(FT.t);$('fp').hidden=true}
+function fdone(){var n=FT.id?get(FT.id):null,m=FT.mins;fstop();bump('f',m);buzz();if(n)burst(n);toast('Фокус завершён: '+m+' мин'+(n?' · '+n.t:''));if($('ftd'))focusView()}
+function focusView(){
+  var n=get(FT.id||S.sel),h='<p class="hint">'+(n?'Задача: <b>'+esc(n.t)+'</b>':'Выберите событие на карте, чтобы привязать к нему фокус.')+'</p><div class="ftd" id="ftd">'+pad(FT.mins)+':00</div>';
+  h+=FT.end?'<div class="row"><button class="main" data-fa="stop" style="flex:1">Остановить</button></div>':'<div class="row">'+[5,15,25,50].map(function(m){return '<button data-fa="'+m+'"'+(m===FT.mins?' class="main"':'')+' style="flex:1">'+m+' мин</button>'}).join('')+'</div><p class="hint">Тихо работайте над одной задачей. Таймер виден в углу, даже если закрыть окно.</p>';
+  ov('Фокус',h);if(FT.end)ftick();
+}
+function pinfo(id){var o=id===CUR?S:null;if(!o)try{o=JSON.parse(localStorage.getItem(keyFor(id)))}catch(x){}o=o||{nodes:[]};var a=o.nodes||[];return{t:o.title||'',c:a.filter(function(n){return n.done}).length,n:a.length}}
+function plansView(){
+  var h='';
+  PL.forEach(function(q){var i=pinfo(q.id);h+='<div class="ai pi" data-pl="'+q.id+'"><span>'+(q.id===CUR?'● ':'')+esc(i.t||q.n)+'</span><small>'+i.c+'/'+i.n+'</small></div>'});
+  h+='<div class="row" style="margin-top:12px"><input type="text" id="npn" placeholder="Название нового плана" aria-label="Название нового плана"><button class="main" data-pa="new">Создать</button></div>';
+  if(PL.length>1)h+='<div class="row" style="margin-top:8px"><button data-pa="del" style="flex:1">Удалить текущий план</button></div>';
+  ov('Мои планы',h);
+}
+function switchPlan(id,title,skip){
+  if(!skip)save();
+  CUR=id;try{localStorage.setItem('ne-cur',id);localStorage.setItem('ne-plans',JSON.stringify(PL))}catch(x){}
+  S.sel=null;S.link=false;S.day=null;S.f=null;S.q='';$('q').value='';Hs=[];Rs=[];S.nodes=[];S.edges=[];
+  load();if(title)S.title=title;save();S.anim=true;ui();fit();setTimeout(function(){S.anim=false},1700);
+  toast('План: '+(S.title||'без названия'));
+}
+$('al').addEventListener('click',function(e){
+  var r=e.target.closest('[data-pl]'),a=e.target.closest('[data-pa]'),f=e.target.closest('[data-fa]');
+  if(r&&r.dataset.pl!==CUR){switchPlan(r.dataset.pl);$('agenda').hidden=true;return}
+  if(a&&a.dataset.pa==='new'){var v=$('npn').value.trim()||'План '+(PL.length+1),id='p'+Date.now().toString(36);PL.push({id:id,n:v});switchPlan(id,v);$('agenda').hidden=true;return}
+  if(a&&a.dataset.pa==='del'){
+    if(!a.dataset.sure){a.dataset.sure=1;a.textContent='Точно? Нажмите ещё раз';return}
+    try{localStorage.removeItem(keyFor(CUR))}catch(x){}
+    PL=PL.filter(function(q){return q.id!==CUR});switchPlan(PL[0].id,null,true);$('agenda').hidden=true;return;
+  }
+  if(f){if(f.dataset.fa==='stop'){fstop()}else{FT.mins=+f.dataset.fa;FT.end=Date.now()+FT.mins*60000;FT.id=S.sel;clearInterval(FT.t);FT.t=setInterval(ftick,500);buzz()}focusView();if(FT.end)ftick()}
+});
+$('pl').onclick=plansView;$('stt').onclick=statsView;$('fc').onclick=focusView;$('fp').onclick=focusView;
 function agenda(){
   var t=iso(0),h='',last='',L=S.nodes.slice().sort(function(a,b){var x=a.d||'9',y=b.d||'9';return x<y?-1:x>y?1:0});
   L.forEach(function(n){
@@ -351,7 +418,7 @@ function agenda(){
   });
   $('al').innerHTML=h||'<p class="hint">Пока пусто</p>';
 }
-$('ag').onclick=function(){agenda();$('agenda').hidden=false};
+$('ag').onclick=function(){$('agt').textContent='Список по датам';agenda();$('agenda').hidden=false};
 $('ax').onclick=function(){$('agenda').hidden=true};
 $('agenda').addEventListener('click',function(e){
   if(e.target===$('agenda')){$('agenda').hidden=true;return}
