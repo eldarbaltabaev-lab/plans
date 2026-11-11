@@ -387,6 +387,7 @@ function plansView(){
   var h='';
   PL.forEach(function(q){var i=pinfo(q.id);h+='<div class="ai pi" data-pl="'+q.id+'"><span>'+(q.id===CUR?'● ':'')+esc(i.t||q.n)+'</span><small>'+i.c+'/'+i.n+'</small></div>'});
   h+='<div class="row" style="margin-top:12px"><input type="text" id="npn" placeholder="Название нового плана" aria-label="Название нового плана"><button class="main" data-pa="new">Создать</button></div>';
+  h+='<div class="row" style="margin-top:8px"><button data-pa="clear" style="flex:1">Очистить текущий план</button></div>';
   if(PL.length>1)h+='<div class="row" style="margin-top:8px"><button data-pa="del" style="flex:1">Удалить текущий план</button></div>';
   ov('Мои планы',h);
 }
@@ -401,6 +402,10 @@ $('al').addEventListener('click',function(e){
   var r=e.target.closest('[data-pl]'),a=e.target.closest('[data-pa]'),f=e.target.closest('[data-fa]');
   if(r&&r.dataset.pl!==CUR){switchPlan(r.dataset.pl);$('agenda').hidden=true;return}
   if(a&&a.dataset.pa==='new'){var v=$('npn').value.trim()||'План '+(PL.length+1),id='p'+Date.now().toString(36);PL.push({id:id,n:v});switchPlan(id,v);$('agenda').hidden=true;return}
+  if(a&&a.dataset.pa==='clear'){
+    if(!a.dataset.sure){a.dataset.sure=1;a.textContent='Точно очистить? Нажмите ещё раз';return}
+    snap();S.nodes=[];S.edges=[];S.sel=null;S.link=false;S.day=null;S.f=null;save();ui();fit();$('agenda').hidden=true;toast('План очищен · ↶ вернёт');return;
+  }
   if(a&&a.dataset.pa==='del'){
     if(!a.dataset.sure){a.dataset.sure=1;a.textContent='Точно? Нажмите ещё раз';return}
     try{localStorage.removeItem(keyFor(CUR))}catch(x){}
