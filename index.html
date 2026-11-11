@@ -80,14 +80,23 @@ label.chk{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700
 .hint{font-size:12.5px;font-weight:500;color:var(--soft);margin:0;line-height:1.5}
 .chips{align-items:center}
 button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--a3);outline-offset:2px}
-#sheet{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(8,4,20,.55);backdrop-filter:blur(3px);touch-action:auto}
-#sheet[hidden]{display:none}
+#sheet,#agenda{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(8,4,20,.55);backdrop-filter:blur(3px);touch-action:auto}
+#sheet[hidden],#agenda[hidden]{display:none}
 .box{width:100%;max-width:520px;max-height:92%;overflow:auto;background:var(--bg);border:1.5px solid var(--ink);border-top:6px solid var(--a1);border-radius:14px 14px 0 0;padding:18px 16px calc(var(--sb) + 18px);display:grid;gap:12px;animation:up .28s ease-out}
 @keyframes up{from{transform:translateY(40px);opacity:0}}
 .box h2{margin:0;font:800 20px 'Shippori Mincho','Noto Serif',serif;display:flex;justify-content:space-between;align-items:center}
 .box h3{margin:6px 0 0;font:800 15px 'Shippori Mincho','Noto Serif',serif;color:var(--a1)}
 .box hr{border:0;border-top:1px solid var(--line);margin:4px 0;width:100%}
 #code,#paste{font:11px/1.35 ui-monospace,Menlo,monospace;height:78px;word-break:break-all}
+.node:hover rect.c{stroke:var(--a1)}
+.rp{fill:none;stroke:var(--a1);stroke-width:3;pointer-events:none;transform-box:fill-box;transform-origin:center;animation:rp .6s ease-out forwards}
+@keyframes rp{from{transform:scale(.1);opacity:1}to{transform:scale(1);opacity:0}}
+.sm{padding:6px 8px;font-size:12px;flex:1}
+.ai{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.ai input{width:22px;height:22px;accent-color:var(--a1);flex:none}
+.ai span{flex:1;font-weight:700}.ai small{color:var(--soft);font-weight:700}
+.ai.late span{color:var(--a1)}.ai.done span{text-decoration:line-through;opacity:.5}
+.ag{font:800 14px 'Shippori Mincho','Noto Serif',serif;color:var(--a1);margin:10px 0 0}
 #toast{position:fixed;left:50%;bottom:calc(var(--sb) + 90px);transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;font-weight:700;opacity:0;pointer-events:none;transition:.3s;z-index:30;max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
@@ -99,7 +108,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <div class="tools"><button class="main" id="share">送 Обмен</button><button id="theme" aria-label="Сменить тему">月</button></div>
 <div id="bar2"><input type="search" id="q" placeholder="Поиск событий…" aria-label="Поиск"><button class="f" id="c1" data-f="today">Сегодня</button><button class="f" id="c2" data-f="late">Просрочено</button></div>
 <div id="car"><button class="ar" id="pv" aria-label="Назад">‹</button><div id="days"></div><button class="ar" id="nx" aria-label="Вперёд">›</button></div>
-<div class="side"><button id="fit" title="Показать весь план" aria-label="Показать весь план">全</button><button id="tidy" title="Разложить" aria-label="Разложить аккуратно">整</button><button id="un" title="Отменить" aria-label="Отменить">↶</button><button id="re" title="Вернуть" aria-label="Вернуть">↷</button><button id="nxt" title="Самое срочное" aria-label="Самое срочное">◎</button></div>
+<div class="side"><button id="fit" title="Показать весь план" aria-label="Показать весь план">全</button><button id="tidy" title="Разложить" aria-label="Разложить аккуратно">整</button><button id="un" title="Отменить" aria-label="Отменить">↶</button><button id="re" title="Вернуть" aria-label="Вернуть">↷</button><button id="nxt" title="Самое срочное" aria-label="Самое срочное">◎</button><button id="ag" title="Список по датам" aria-label="Список по датам">☰</button></div>
 <div id="panel"></div>
 <div id="sheet" hidden>
   <div class="box" role="dialog" aria-label="Обмен планами">
@@ -116,6 +125,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
     <div class="row"><button class="main" id="rep" style="flex:1">Заменить мой план</button><button id="add" style="flex:1">Добавить рядом</button></div>
   </div>
 </div>
+<div id="agenda" hidden><div class="box" role="dialog" aria-label="Список по датам"><h2>Список по датам <button id="ax" aria-label="Закрыть">✕</button></h2><div id="al"></div></div></div>
 <div id="toast" role="status"></div>
 <script>
 (function(){
@@ -183,9 +193,10 @@ function render(){
 }
 function panelHtml(){
   var n=get(S.sel);
-  if(!n){panel.innerHTML='<p class="hint">Коснитесь события, чтобы изменить его. Двойной тап по пустому месту создаёт новое. Пустое место двигает карту, щипок — масштаб.</p><div class="row"><button class="main" data-a="addroot" style="flex:1">＋ Новое событие</button></div>';return}
+  if(!n){panel.innerHTML='<p class="hint">'+pv+'</p><input type="text" id="qa" placeholder="Быстро: «Позвонить завтра» + Enter" aria-label="Быстро добавить"><div class="row"><button class="main" data-a="addroot" style="flex:1">＋ Новое событие</button></div><p class="hint">Двойной тап по пустому месту — новое событие. Клавиши: N — новое, / — поиск, F — весь план.</p>';return}
   panel.innerHTML='<div class="row"><input type="text" id="ft" value="'+esc(n.t)+'" placeholder="Название события" aria-label="Название"></div>'+
    '<div class="row"><input type="date" id="fd" value="'+(n.d||'')+'" aria-label="Дата"><label class="chk"><input type="checkbox" id="fx"'+(n.done?' checked':'')+'>Готово</label></div>'+
+   '<div class="row"><button class="sm" data-a="dt" data-v="0">Сегодня</button><button class="sm" data-a="dt" data-v="1">Завтра</button><button class="sm" data-a="dt" data-v="7">+ неделя</button><button class="sm" data-a="dt" data-v="x">Без даты</button></div>'+
    '<div class="row chips">'+COL.map(function(c,i){return '<button data-a="col" data-v="'+i+'" class="chip'+((n.c||0)===i?' on':'')+'" style="--c:'+c+'" aria-label="Цвет '+(i+1)+'"></button>'}).join('')+'</div>'+
    '<textarea id="fn" rows="2" placeholder="Заметка: что сделать и зачем" aria-label="Заметка">'+esc(n.n||'')+'</textarea>'+
    '<div>'+(n.s||[]).map(function(i,k){return '<div class="row cr"><input type="checkbox" data-k="'+k+'"'+(i.x?' checked':'')+' aria-label="Готово"><input type="text" data-s="'+k+'" value="'+esc(i.t)+'" aria-label="Подзадача"><button data-a="sx" data-k="'+k+'" aria-label="Убрать">✕</button></div>'}).join('')+'</div>'+
@@ -211,14 +222,14 @@ $('re').onclick=function(){jump(Rs,Hs,'Нечего возвращать')};
 function burst(n){
   var s='';for(var i=0;i<16;i++){var a=i/16*6.283,r=60+Math.random()*60;
     s+='<circle class="pf" cx="'+n.x+'" cy="'+n.y+'" r="'+(3+Math.random()*3.5)+'" style="fill:'+COL[i%5]+';--dx:'+Math.cos(a)*r+'px;--dy:'+Math.sin(a)*r+'px"/>'}
-  var f=$('fx');f.innerHTML=s;clearTimeout(burst.h);burst.h=setTimeout(function(){f.innerHTML=''},1000);
+  var f=$('fx');f.insertAdjacentHTML('beforeend',s);clearTimeout(burst.h);burst.h=setTimeout(function(){f.innerHTML=''},1000);
 }
 panel.addEventListener('focusin',function(e){if(/INPUT|TEXTAREA/.test(e.target.tagName)&&e.target.type!=='checkbox')snap()});
 panel.addEventListener('input',function(e){
   var n=get(S.sel);if(!n)return;
   if(e.target.id==='ft')n.t=e.target.value;
   if(e.target.id==='fd')n.d=e.target.value;
-  if(e.target.id==='fx'){snap();n.done=e.target.checked;if(n.done){burst(n);toast('Отлично! Ещё один шаг сделан');if(n.r&&n.d){var c=JSON.parse(JSON.stringify(n));c.id=uid();c.d=shift(n.d,n.r);c.done=false;c.y=n.y+150;c.s=(c.s||[]).map(function(i){return{t:i.t,x:0}});n.r=0;S.nodes.push(c);S.edges.push([n.id,c.id]);toast('Создан следующий повтор: '+fmt(c.d))}}}
+  if(e.target.id==='fx'){snap();setDone(n,e.target.checked)}
   if(e.target.id==='fn')n.n=e.target.value;if(e.target.dataset.s!==undefined)n.s[+e.target.dataset.s].t=e.target.value;if(e.target.dataset.k!==undefined&&e.target.type==='checkbox'){snap();n.s[+e.target.dataset.k].x=e.target.checked}if(e.target.id==='fr'){snap();n.r=+e.target.value}
   save();render();
 });
@@ -229,10 +240,33 @@ panel.addEventListener('click',function(e){
   if(act==='col'&&n){snap();n.c=+a.dataset.v;save();ui()}
   if(act==='child'&&n)add(n);
   if(act==='link'){S.link=!S.link;ui()}
-  if(act==='sx'&&n){snap();n.s.splice(+a.dataset.k,1);save();ui()}if(act==='dup'&&n){snap();var c=JSON.parse(JSON.stringify(n));c.id=uid();c.x+=W*.4;c.y+=H+14;c.done=false;S.nodes.push(c);S.sel=c.id;save();ui();toast('Копия создана')}
+  if(act==='dt'&&n){snap();var v=a.dataset.v;n.d=v==='x'?'':v==='7'?shift(n.d||iso(0),7):iso(+v);save();ui();toast(fmt(n.d))}if(act==='sx'&&n){snap();n.s.splice(+a.dataset.k,1);save();ui()}if(act==='dup'&&n){snap();var c=JSON.parse(JSON.stringify(n));c.id=uid();c.x+=W*.4;c.y+=H+14;c.done=false;S.nodes.push(c);S.sel=c.id;save();ui();toast('Копия создана')}
   if(act==='del'&&n){snap();S.nodes=S.nodes.filter(function(x){return x.id!==n.id});S.edges=S.edges.filter(function(x){return x[0]!==n.id&&x[1]!==n.id});S.sel=null;S.link=false;save();ui();toast('Удалено · ↶ вернёт')}
 });
 panel.addEventListener('keydown',function(e){var n=get(S.sel);if(n&&e.key==='Enter'&&e.target.id==='ns'&&e.target.value.trim()){snap();(n.s=n.s||[]).push({t:e.target.value.trim(),x:0});save();ui();var f=$('ns');if(f)f.focus()}});
+var DN=['вс','пн','вт','ср','чт','пт','сб'],PV=['七転び八起き — семь раз упасть, восемь раз встать','千里の道も一歩から — путь в тысячу ри начинается с шага','継続は力なり — постоянство — это сила','急がば回れ — торопишься — иди в обход'],pv=PV[Math.floor(Math.random()*PV.length)];
+function buzz(){try{navigator.vibrate&&navigator.vibrate(12)}catch(x){}}
+function qparse(s){
+  var l=s.toLowerCase(),d=null,o=s,m,K=[['послезавтра',2],['завтра',1],['сегодня',0]];
+  for(var i=0;i<3&&d===null;i++){var p=l.indexOf(K[i][0]);if(p>=0){d=iso(K[i][1]);o=s.slice(0,p)+s.slice(p+K[i][0].length)}}
+  if(d===null&&(m=s.match(/через (\d+) ?(нед|дн|д)\S*/i))){d=iso(m[2].toLowerCase()==='нед'?7*m[1]:+m[1]);o=s.replace(m[0],'')}
+  if(d===null&&(m=s.match(/(\d{1,2})\.(\d{1,2})/))){var y=new Date().getFullYear(),c=y+'-'+pad(+m[2])+'-'+pad(+m[1]);d=c<iso(0)?(y+1)+c.slice(4):c;o=s.replace(m[0],'')}
+  if(d===null){var ws=s.split(' '),j=ws.findIndex(function(w){return DN.indexOf(w.toLowerCase())>=0});if(j>=0){d=iso((DN.indexOf(ws[j].toLowerCase())-new Date().getDay()+7)%7||7);ws.splice(j,1);o=ws.join(' ')}}
+  return{t:o.replace(/\s+/g,' ').trim()||'Новое событие',d:d};
+}
+function setDone(n,v){
+  n.done=v;save();if(!v)return;
+  burst(n);buzz();toast('Отлично! Ещё один шаг сделан');
+  if(n.r&&n.d){var c=JSON.parse(JSON.stringify(n));c.id=uid();c.d=shift(n.d,n.r);c.done=false;c.y=n.y+150;c.s=(c.s||[]).map(function(i){return{t:i.t,x:0}});n.r=0;S.nodes.push(c);S.edges.push([n.id,c.id]);toast('Создан следующий повтор: '+fmt(c.d))}
+  else if(S.nodes.every(function(x){return x.done})){party();toast('Весь план выполнен! 🎉')}
+}
+function party(){S.nodes.forEach(function(n,i){setTimeout(function(){burst(n)},i*160)})}
+panel.addEventListener('keydown',function(e){
+  if(e.key!=='Enter'||e.target.id!=='qa'||!e.target.value.trim())return;
+  var r=qparse(e.target.value);snap();
+  var n={id:uid(),t:r.t,d:r.d||S.day||iso(0),c:0,done:false,x:-S.tx/S.k+svg.clientWidth/2/S.k+Math.random()*120-60,y:-S.ty/S.k+svg.clientHeight*.3/S.k+Math.random()*80-40};
+  S.nodes.push(n);save();ui();var q=$('qa');if(q)q.focus();toast('Добавлено · '+fmt(n.d));
+});
 function add(p,pos){
   snap();
   var kids=p?S.edges.filter(function(e){return e[0]===p.id}).length:0;
@@ -274,7 +308,7 @@ function up(e){
         if(i>=0)S.edges.splice(i,1);else S.edges.push([S.sel,d.id]);
         S.link=false;save();ui();return
       }
-      S.sel=d.id;S.link=false;ui();return
+      buzz();S.sel=d.id;S.link=false;ui();return
     }
     save();
   }else if(!moved){
@@ -283,6 +317,7 @@ function up(e){
     lt=now;lx=e.clientX;ly=e.clientY;S.sel=null;S.link=false;ui();
   }
 }
+svg.addEventListener('pointerdown',function(e){var w=world2(e),f=$('fx');f.insertAdjacentHTML('beforeend','<circle class="rp" cx="'+w.x+'" cy="'+w.y+'" r="40"/>');setTimeout(function(){var c=f.querySelector('.rp');if(c)c.remove()},650)});
 svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
 svg.addEventListener('wheel',function(e){
   e.preventDefault();var r=svg.getBoundingClientRect(),k0=S.k;
@@ -307,6 +342,24 @@ function tidy(){
   Object.keys(rows).forEach(function(r){var a=rows[r].sort(function(p,q){return p.x-q.x});a.forEach(function(n,i){n.x=(i-(a.length-1)/2)*(W+36);n.y=r*150})});
   save();fit();toast('План разложен · ↶ вернёт');
 }
+function agenda(){
+  var t=iso(0),h='',last='',L=S.nodes.slice().sort(function(a,b){var x=a.d||'9',y=b.d||'9';return x<y?-1:x>y?1:0});
+  L.forEach(function(n){
+    var late=n.d&&n.d<t&&!n.done,g=late?'Просрочено':n.d===t?'Сегодня':n.d?fmt(n.d):'Без даты';
+    if(g!==last){h+='<div class="ag">'+g+'</div>';last=g}
+    h+='<div class="ai'+(n.done?' done':'')+(late?' late':'')+'" data-id="'+n.id+'"><input type="checkbox" data-id="'+n.id+'"'+(n.done?' checked':'')+' aria-label="Готово"><span>'+esc(n.t||'Без названия')+'</span><small>'+(n.s&&n.s.length?'☑'+n.s.filter(function(i){return i.x}).length+'/'+n.s.length:'')+'</small></div>';
+  });
+  $('al').innerHTML=h||'<p class="hint">Пока пусто</p>';
+}
+$('ag').onclick=function(){agenda();$('agenda').hidden=false};
+$('ax').onclick=function(){$('agenda').hidden=true};
+$('agenda').addEventListener('click',function(e){
+  if(e.target===$('agenda')){$('agenda').hidden=true;return}
+  var n;
+  if(e.target.type==='checkbox'){n=get(e.target.dataset.id);if(n){snap();setDone(n,e.target.checked);render();agenda()}return}
+  var r=e.target.closest('.ai');
+  if(r&&(n=get(r.dataset.id))){S.sel=n.id;S.link=false;S.k=1;S.tx=svg.clientWidth/2-n.x;S.ty=svg.clientHeight*.34-n.y;$('agenda').hidden=true;ui()}
+});
 $('nxt').onclick=function(){var c=S.nodes.filter(function(n){return !n.done}).sort(function(a,b){return (a.d||'9')<(b.d||'9')?-1:1})[0];if(!c)return toast('Всё сделано 🎉');S.sel=c.id;S.link=false;S.k=1;S.tx=svg.clientWidth/2-c.x;S.ty=svg.clientHeight*.34-c.y;ui()};
 $('txt').onclick=function(){var l=['План «'+(S.title||'без названия')+'»'];S.nodes.slice().sort(function(a,b){return (a.d||'9')<(b.d||'9')?-1:1}).forEach(function(n){l.push((n.done?'☑ ':'☐ ')+(n.d?fmt(n.d)+' — ':'')+n.t);(n.s||[]).forEach(function(i){l.push('    '+(i.x?'☑ ':'☐ ')+i.t)})});copy(l.join('\n'))};
 $('fit').onclick=fit;$('tidy').onclick=tidy;
@@ -371,12 +424,12 @@ async function imp(mode){
 $('rep').onclick=function(){imp('rep')};$('add').onclick=function(){imp('add')};
 window.addEventListener('resize',render);
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'&&!sheet.hidden){closeSheet();return}
+  if(e.key==='Escape'){closeSheet();$('agenda').hidden=true;return}
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?$('re').click():$('un').click();return}
   if(/INPUT|TEXTAREA/.test(e.target.tagName))return;
   if((e.key==='Delete'||e.key==='Backspace')&&S.sel){var b=panel.querySelector('[data-a=del]');if(b)b.click()}
   if(e.key==='Enter'&&S.sel){var c=get(S.sel);if(c)add(c)}
-  if(e.key==='f')fit();
+  if(e.key==='f')fit();if(e.key==='n'){e.preventDefault();add(null)}if(e.key==='/'){e.preventDefault();$('q').focus()}
 });
 for(var pi=0;pi<14;pi++){var pe=document.createElement('i');pe.className='pt';pe.style.left=Math.random()*100+'vw';pe.style.setProperty('--dx',(Math.random()*180-60)+'px');pe.style.animationDuration=(9+Math.random()*9)+'s';pe.style.animationDelay=(-Math.random()*14)+'s';document.body.appendChild(pe)}
 S.anim=true;load();ui();fit();setTimeout(function(){S.anim=false},1700);
